@@ -12,15 +12,14 @@ connectDB();
 
 const app = express();
 
-// ✅ SIMPLE & SAFE CORS FIX
+// ✅ CORS
 app.use(cors({
-  origin: "*",   // allow all temporarily for testing
-  credentials: false,
+  origin: "*",   // allow all for now
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
-app.options("*", cors());   // ✅ VERY IMPORTANT
+app.options("*", cors());
 
 app.use(express.json());
 
