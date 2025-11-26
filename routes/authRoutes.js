@@ -4,14 +4,32 @@ import User from "../models/User.js";
 
 const router = express.Router();
 
-// Generate token
-const generateToken = (payload) =>
-  jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
+const generateToken = (user) => {
+  return jwt.sign(
+    { 
+      id: user._id, 
+      role: user.role,
+      name: user.name,
+      email: user.email 
+    }, 
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+};
 
-// ---------------- SEED ROUTE ----------------
 router.post("/seed", async (req, res) => {
   try {
-    await User.deleteMany({});
+    console.log("🌱 Seeding database...");
+
+    const count = await User.countDocuments();
+
+    // Only seed if DB is empty
+    if (count > 0) {
+      return res.json({ 
+        message: "Database already seeded",
+        usersCount: count
+      });
+    }
 
     const ceo = await User.create({
       name: "CEO User",
@@ -35,34 +53,36 @@ router.post("/seed", async (req, res) => {
     });
 
     res.json({
-      message: "✅ Seeded users",
+      message: "✅ Database seeded successfully",
       users: [
         { email: ceo.email, role: ceo.role },
         { email: hr.email, role: hr.role },
         { email: emp.email, role: emp.role }
       ]
     });
-  } catch (err) {
-    console.error("Seed error:", err);
-    res.status(500).json({ message: "Seed failed" });
+
+  } catch (error) {
+    console.error("❌ Seed error:", error);
+    res.status(500).json({
+      message: "Seed failed",
+      error: error.message
+    });
   }
 });
 
-// ---------------- LOGIN ROUTE ----------------
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const user = await User.findOne({ email });
 
-    if (!user) {
+    if (!user)
       return res.status(401).json({ message: "Invalid email ❌" });
-    }
 
-    const match = await user.matchPassword(password);
-    if (!match) {
+    const isMatch = await user.matchPassword(password);
+
+    if (!isMatch)
       return res.status(401).json({ message: "Invalid password ❌" });
-    }
 
     const token = generateToken(user);
 
@@ -75,12 +95,11 @@ router.post("/login", async (req, res) => {
         role: user.role
       }
     });
+
   } catch (err) {
     console.error("Login error:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 });
-
-
 
 export default router;
