@@ -10,28 +10,44 @@ import permissionRoutes from "./routes/permissionRoutes.js";
 dotenv.config();
 connectDB();
 
-const app = express();   // ✅ MUST come before app.use()
+const app = express();
 
-// ✅ Correct CORS setup
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",   // local frontend
-      "https://peopledesk-frontend-w9dk.vercel.app" // ONLY domain, no /login
-    ],
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true
-  })
-);
+// ✅ Allowed origins
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://peopledesk-frontend-w9dk.vercel.app"
+];
 
+// ✅ Proper CORS setup
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like Postman)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+}));
+
+// ✅ Handle preflight requests properly
+app.options("*", cors());
+
+// ✅ Body parser
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Routes
+// ✅ API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/leaves", leaveRoutes);
 app.use("/api/permissions", permissionRoutes);
 
+// ✅ Health check route
 app.get("/", (req, res) => {
   res.send("✅ Cookscape People Desk API running");
 });
