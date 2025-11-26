@@ -5,7 +5,6 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import leaveRoutes from "./routes/leaveRoutes.js";
 import permissionRoutes from "./routes/permissionRoutes.js";
-import cors from "cors";
 
 app.use(
   cors({
