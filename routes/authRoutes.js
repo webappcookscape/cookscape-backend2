@@ -51,74 +51,59 @@ router.post("/seed", async (req, res) => {
 // ---------------- LOGIN ROUTE ----------------
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  const defaultEmployeePassword = "cookscape123";
 
   try {
-    const user = await User.findOne({ email });
+    let user = await User.findOne({ email });
 
-    // ✅ CASE 1: NORMAL USERS (CEO / HR / Seeded Employee)
-    if (user) {
-      // EMPLOYEE uses common password
-      if (user.role === "EMPLOYEE") {
-        if (password !== defaultEmployeePassword) {
-          return res.status(401).json({ message: "Invalid password ❌" });
-        }
-      } 
-      else {
-        const match = await user.matchPassword(password);
-        if (!match) {
-          return res.status(401).json({ message: "Invalid password ❌" });
-        }
-      }
+    // Common employee password
+    const defaultEmployeePassword = "cookscape123";
 
-      const token = generateToken({
-        id: user._id,
-        role: user.role,
-        name: user.name,
-        email: user.email
-      });
-
-      return res.json({
-        token,
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role
-        }
-      });
-    }
-
-    // ✅ CASE 2: GMAIL USERS → AUTO EMPLOYEE
-    if (email.endsWith("@gmail.com") && password === defaultEmployeePassword) {
-      const name = email.split("@")[0];
-
-      const token = generateToken({
-        id: null,
-        role: "EMPLOYEE",
-        name,
-        email
-      });
-
-      return res.json({
-        token,
-        user: {
-          id: null,
-          name,
+    if (!user) {
+      // If Gmail user → auto create new employee
+      if (email.endsWith("@gmail.com")) {
+        user = await User.create({
+          name: email.split("@")[0],
           email,
-          role: "EMPLOYEE",
-          guest: true
-        }
-      });
+          password: defaultEmployeePassword,
+          role: "EMPLOYEE"
+        });
+      } else {
+        return res.status(401).json({ message: "Invalid email ❌" });
+      }
     }
 
-    // ❌ Block others
-    return res.status(401).json({ message: "User not allowed ❌" });
+    // Employee password check
+    if (user.role === "EMPLOYEE") {
+      if (password !== defaultEmployeePassword) {
+        return res.status(401).json({ message: "Invalid password ❌" });
+      }
+    } else {
+      if (!(await user.matchPassword(password))) {
+        return res.status(401).json({ message: "Invalid password ❌" });
+      }
+    }
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.json({
+      token,
+      user: {
+        id: user._id,     // ✅ now NOT NULL
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
 
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 export default router;
