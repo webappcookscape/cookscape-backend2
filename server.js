@@ -12,44 +12,25 @@ connectDB();
 
 const app = express();
 
-// ✅ Allowed origins
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://peopledesk-frontend-w9dk.vercel.app"
-];
-
-// ✅ Proper CORS setup
+// ✅ SIMPLE & SAFE CORS FIX
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like Postman)
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      return callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: "*",   // allow all temporarily for testing
+  credentials: false,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// ✅ Handle preflight requests properly
-app.options("*", cors());
+app.options("*", cors());   // ✅ VERY IMPORTANT
 
-// ✅ Body parser
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// ✅ API Routes
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/leaves", leaveRoutes);
 app.use("/api/permissions", permissionRoutes);
 
-// ✅ Health check route
 app.get("/", (req, res) => {
-  res.send("✅ Cookscape People Desk API running");
+  res.send("✅ Cookscape People Desk API running...");
 });
 
 const PORT = process.env.PORT || 5000;
