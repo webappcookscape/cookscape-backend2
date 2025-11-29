@@ -22,7 +22,8 @@ router.post("/", auth, authorize("EMPLOYEE"), async (req, res) => {
 
     const leave = await Leave.create({
       employee: req.user.id,
-      employeeName: finalName,   // ✅ stored directly in document
+      employeeName: finalName,
+      reportingHead,   // ✅ stored directly in document
       fromDate,
       toDate,
       reason,

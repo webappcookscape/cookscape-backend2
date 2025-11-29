@@ -8,7 +8,12 @@ const leaveSchema = new mongoose.Schema(
     employeeName: {
       type: String,
       required: true
-    },
+    },reportingHead: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  required: true
+},
+
     reason: { type: String, required: true },
     ceoDecision: {
       type: String,

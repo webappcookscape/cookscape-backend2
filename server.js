@@ -6,6 +6,8 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import leaveRoutes from "./routes/leaveRoutes.js";
 import permissionRoutes from "./routes/permissionRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+
 
 dotenv.config();
 connectDB();
@@ -27,6 +29,8 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/leaves", leaveRoutes);
 app.use("/api/permissions", permissionRoutes);
+app.use("/api/users", userRoutes);
+
 
 app.get("/", (req, res) => {
   res.send("✅ Cookscape People Desk API running...");
