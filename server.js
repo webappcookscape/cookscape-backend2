@@ -7,12 +7,13 @@ import authRoutes from "./routes/authRoutes.js";
 import leaveRoutes from "./routes/leaveRoutes.js";
 import permissionRoutes from "./routes/permissionRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
-
+import seedRoutes from "./routes/seedRoutes.js";
 
 dotenv.config();
 connectDB();
 
 const app = express();
+app.use("/api/seed", seedRoutes);
 
 // ✅ CORS
 app.use(cors({

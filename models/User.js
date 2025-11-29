@@ -6,10 +6,17 @@ const userSchema = new mongoose.Schema(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+
     role: {
       type: String,
-      enum: ["EMPLOYEE", "CEO", "HR", "BH"],
+      enum: ["EMPLOYEE", "HR", "COO", "HCF", "BH", "DM"],
       default: "EMPLOYEE"
+    },
+
+    reportingHead: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null
     }
   },
   { timestamps: true }
@@ -26,5 +33,4 @@ userSchema.methods.matchPassword = async function (entered) {
   return bcrypt.compare(entered, this.password);
 };
 
-const User = mongoose.model("User", userSchema);
-export default User;
+export default mongoose.model("User", userSchema);
